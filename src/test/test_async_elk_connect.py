@@ -1,6 +1,6 @@
 import asyncio
 from elasticsearch import AsyncElasticsearch
-from src.config import config
+from src.objects.config import config
 async def connect_elasticsearch():
     es = AsyncElasticsearch([config.ELK_URL], basic_auth=(config.ELK_USER, config.ELK_PASS))
     if await es.ping():
