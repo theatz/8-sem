@@ -4,7 +4,7 @@ logger = logging.getLogger('mylogger')
 logger.setLevel(logging.DEBUG)
 
 # Create a file handler that logs to a file named myapp.log
-file_handler = logging.FileHandler('crawler.log')
+file_handler = logging.FileHandler('app.log')
 
 # Create a stream handler that logs to the console
 stream_handler = logging.StreamHandler()

@@ -1,9 +1,9 @@
 import pika
 
-from src.objects.config import config
-from src.objects.logger import logger
+from objects.config import config
+from objects.logger import logger
 from RbcParser import RbcParser
-from src.objects.schemas import ParsedMessage
+from objects.schemas import ParsedMessage
 
 queue_consume_name = 'parse_queue'
 queue_produce_name = 'download_queue'
@@ -13,7 +13,6 @@ def parse(ch, method, props, body):
     html = body.decode('utf-8')
     try:
         message: ParsedMessage = RbcParser.parse(html=html)
-        logger.info(message)
         for url in message.links:
             ch.basic_publish(exchange='',
                          routing_key=queue_produce_name,

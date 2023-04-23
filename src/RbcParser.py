@@ -1,7 +1,7 @@
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-from src.objects.IEntities import IParser
+from objects.IEntities import IParser
 
 
 class RbcParser(IParser):
