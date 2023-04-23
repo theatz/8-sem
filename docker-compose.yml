@@ -1,0 +1,18 @@
+version: '3.3'
+
+services:
+  parser_1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command:
+      "python3 parser.py"
+
+  downloader_1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command:
+      "python3 downloader.py"
