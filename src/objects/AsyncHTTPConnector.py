@@ -1,7 +1,7 @@
-import asyncio
 import aiohttp
 import aiohttp_socks
 import backoff
+
 
 class AsyncHTTPConnector:
     def __init__(self, max_connections=10, timeout=30, proxy=None):
@@ -11,7 +11,8 @@ class AsyncHTTPConnector:
         self.proxy = proxy
 
     async def __aenter__(self):
-        connector_kwargs = {'limit': self.max_connections, 'limit_per_host': self.max_connections, 'force_close': True, 'enable_cleanup_closed': True, 'ssl': False}
+        connector_kwargs = {'limit': self.max_connections, 'limit_per_host': self.max_connections, 'force_close': True,
+                            'enable_cleanup_closed': True, 'ssl': False}
         if self.proxy:
             connector = aiohttp_socks.SocksConnector.from_url(self.proxy, **connector_kwargs)
         else:

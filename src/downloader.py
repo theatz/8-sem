@@ -1,5 +1,8 @@
 import asyncio
+import json
+
 import aio_pika
+import aiohttp
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from objects.config import config
@@ -8,6 +11,7 @@ from objects.AsyncHTTPConnector import AsyncHTTPConnector as HTTPConnector
 
 queue_consume_name = 'download_queue'
 queue_produce_name = 'parse_queue'
+queue_produce_elk_name = 'elk_queue'
 
 max_gather_size = 20
 
@@ -21,13 +25,20 @@ async def get_queue_length(queue_name: str = queue_consume_name):
     await connection.close()
     return queue.declaration_result.message_count
 
-async def download(url: str) -> str | None:
+def safe_getattr(obj, name, default):
+    try:
+        return getattr(obj, name, default)
+    except Exception:
+        return default
+async def download(url: str) -> str | dict:
     async with HTTPConnector() as connectror:
         try:
             return await connectror.request(method='GET', url=url)
-        except Exception as e:
-            logger.error(e)
-            return None
+        except aiohttp.client_exceptions.ClientConnectorError as e:
+            return {
+                "url" : url,
+                "status" : safe_getattr(e, "status", str(e)),
+            }
 
 async def main():
     queue_length = await get_queue_length()
@@ -51,8 +62,8 @@ async def main():
     tasks = []
     for message in messages:
         tasks.append(download(message))
-    res = await asyncio.gather(*tasks)
-    logger.info(f'Downloaded {len(res)} ulrs')
+    result = await asyncio.gather(*tasks)
+    logger.info(f'Downloaded {len(result)} ulrs')
 
     connection = await aio_pika.connect_robust(host=config.RMQ_HOST,
                                                login=config.RMQ_USER,
@@ -60,9 +71,13 @@ async def main():
     channel = await connection.channel()
     await channel.declare_queue(queue_produce_name)
 
-    for html in res:
-        await channel.default_exchange.publish(aio_pika.Message(body=bytes(html, 'utf-8')),
+    for res in result:
+        if isinstance(res, str):
+            await channel.default_exchange.publish(aio_pika.Message(body=bytes(res, 'utf-8')),
                                                routing_key=queue_produce_name)
+        elif isinstance(res, dict):
+            await channel.default_exchange.publish(aio_pika.Message(body=bytes(json.dumps(res), 'utf-8')),
+                                               routing_key=queue_produce_elk_name)
     await connection.close()
 
 if __name__ == "__main__":
