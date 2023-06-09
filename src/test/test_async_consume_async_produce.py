@@ -4,11 +4,11 @@ import aio_pika
 from src.objects.config import config
 from src.objects.logger import logger
 
-
 queue_name='download_queue'
 
 async def publish_message():
     connection = await aio_pika.connect_robust(host=config.RMQ_HOST,
+                                               port=config.RMQ_PORT,
                                                login=config.RMQ_USER,
                                                password=config.RMQ_PASS)
     channel = await connection.channel()
@@ -19,6 +19,7 @@ async def publish_message():
 
 async def consume_message():
     connection = await aio_pika.connect_robust(host=config.RMQ_HOST,
+                                               port=config.RMQ_PORT,
                                                login=config.RMQ_USER,
                                                password=config.RMQ_PASS)
     channel = await connection.channel()

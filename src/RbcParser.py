@@ -8,8 +8,8 @@ class RbcParser(IParser):
     @classmethod
     def _get_author(cls, html: str) -> str:
         soup = BeautifulSoup(html, 'html.parser')
-        author_span = soup.find('span', class_='article__authors__author__name')
-        return author_span.text
+        author_spans = soup.find_all('span', class_='article__authors__author__name')
+        return [author_span.text.replace(", ", "") for author_span in author_spans]
 
     @classmethod
     def _get_date(cls, html: str) -> datetime:

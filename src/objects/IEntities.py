@@ -5,7 +5,7 @@ from objects.schemas import ParsedMessage
 
 class IParser(ABC):
     @classmethod
-    def _get_author(cls, html: str) -> str:
+    def _get_author(cls, html: str) -> list[str]:
         ...
 
     @classmethod
